@@ -1,5 +1,5 @@
 import express from 'express'
-import { Login } from './loginModel.js'
+import { Login } from './userModel.js'
 
 const LoginRouter = express.Router()
 
