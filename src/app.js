@@ -2,6 +2,7 @@ import express,{json} from 'express'
 import {connect} from 'mongoose'
 import {config} from 'dotenv'
 import cors from 'cors'
+import LoginRouter from './Authentication/loginRouter.js'
 
 const app = express()
 app.use(json())
