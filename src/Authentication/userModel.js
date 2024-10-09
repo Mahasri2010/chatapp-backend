@@ -11,19 +11,6 @@ const UserSchema = new mongoose.Schema(
         password:{
             type:String,
             reqired:[true,"Password is required"]
-        },
-        firstName:{
-            type:String
-        },
-        lastName:{
-            type:String
-        },
-        image:{
-            type:String
-        },
-        profileSetup:{
-            type:Boolean,
-            default:false
         }
     }
 )
