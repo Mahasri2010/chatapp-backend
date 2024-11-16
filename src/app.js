@@ -2,8 +2,8 @@ import express, { json, urlencoded } from 'express'
 import { connect } from 'mongoose'
 import { config } from 'dotenv'
 import cors from 'cors'
-import http from 'http'
-import { Server } from 'socket.io'
+// import http from 'http'
+// import { Server } from 'socket.io'
 import AuthRouter from './Authentication/authRouter.js'
 import ProfileRouter from './Profile/profileRouter.js'
 import ContactRouter from './Contacts/contactRouter.js'
@@ -21,13 +21,13 @@ const port = process.env.port
 const mongodb = process.env.mongodb
 
 // Set up HTTP server and Socket.IO server
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "http://localhost:4001", // Frontend URL, adjust as necessary
-        methods: ["GET", "POST"]
-    }
-});
+// const server = http.createServer(app);
+// const io = new Server(server, {
+//     cors: {
+//         origin: "http://localhost:4001", // Frontend URL, adjust as necessary
+//         methods: ["GET", "POST"]
+//     }
+// });
 
 app.use('/Auth', AuthRouter)
 app.use('/Profile', ProfileRouter)
@@ -36,38 +36,38 @@ app.use('/Chat', ChatRouter)
 app.use('/Message', MessageRouter)
 
 // Socket.IO connection handler
-io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
+// io.on("connection", (socket) => {
+//     console.log("A user connected:", socket.id);
 
-    // Join a specific chat room
-    socket.on("joinChat", (chatId) => {
-        socket.join(chatId);
-        console.log(`User ${socket.id} joined chat ${chatId}`);
-    });
+//     // Join a specific chat room
+//     socket.on("joinChat", (chatId) => {
+//         socket.join(chatId);
+//         console.log(`User ${socket.id} joined chat ${chatId}`);
+//     });
 
-    // Listen for message events and broadcast to the chat room
-    socket.on("sendMessage", (message) => {
-        const { chatId, content, senderId } = message;
+//     // Listen for message events and broadcast to the chat room
+//     socket.on("sendMessage", (message) => {
+//         const { chatId, content, senderId } = message;
 
-        // Broadcast message to everyone in the chat room
-        io.to(message.chatId).emit("receiveMessage", message);
-    });
+//         // Broadcast message to everyone in the chat room
+//         io.to(message.chatId).emit("receiveMessage", message);
+//     });
 
-    // Handle receiving message status update (e.g., message delivered or read)
-    socket.on('messageStatusUpdate', (messageData) => {
-        // This will be emitted whenever a message's status changes (sent -> delivered -> read)
-        const { messageId, status } = messageData;
+//     // Handle receiving message status update (e.g., message delivered or read)
+//     socket.on('messageStatusUpdate', (messageData) => {
+//         // This will be emitted whenever a message's status changes (sent -> delivered -> read)
+//         const { messageId, status } = messageData;
 
-        // Emit the status update to all clients in the relevant chat room
-        io.emit('statusUpdated', { messageId, status });
-        console.log(`Message status updated: ${messageId} - ${status}`);
-    });
+//         // Emit the status update to all clients in the relevant chat room
+//         io.emit('statusUpdated', { messageId, status });
+//         console.log(`Message status updated: ${messageId} - ${status}`);
+//     });
 
-    // Handle disconnect
-    socket.on("disconnect", () => {
-        console.log("User disconnected:", socket.id);
-    });
-});
+//     // Handle disconnect
+//     socket.on("disconnect", () => {
+//         console.log("User disconnected:", socket.id);
+//     });
+// });
 
 
 
@@ -75,7 +75,7 @@ io.on("connection", (socket) => {
 const start = async () => {
 
     await connect(mongodb)
-    server.listen(port, console.log(`Serving on the post ${port}`))
+    app.listen(port, console.log(`Serving on the post ${port}`))
 }
 
 start()

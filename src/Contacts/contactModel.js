@@ -19,6 +19,7 @@ const contactSchema = new mongoose.Schema(
     },
     status: {
       type: String, // e.g., "accepted", "blocked", "pending"
+      enum:['pending','accepted','blocked'],
       default: 'pending',
     },
     contact_number: {

@@ -81,30 +81,72 @@ ContactRouter.get('/contacts/:authId', async (req, res) => {
 });
 
 
-ContactRouter.patch('/update/:id/', async (request, response) => {
+// ContactRouter.patch('/update/:id/', async (request, response) => {
 
-  const { id } = request.params
-  const updatedContact = await Contact.findByIdAndUpdate(id, request.body, { new: true });
+//   const { id } = request.params
+//   const updatedContact = await Contact.findByIdAndUpdate(id, request.body, { new: true });
 
-  if (!updatedContact) {
-    return response.status(404).json({ message: 'Contact not found.' });
+//   if (!updatedContact) {
+//     return response.status(404).json({ message: 'Contact not found.' });
+//   }
+
+//   response.json(updatedContact);
+// })
+
+ContactRouter.patch('/update/:id/', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Validate input here if necessary
+
+    const updatedContact = await Contact.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true, runValidators: true } // Ensures validators are run
+    );
+
+    if (!updatedContact) {
+      return res.status(404).json({ message: 'Contact not found.' });
+    }
+
+    res.json(updatedContact);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update contact.', error });
   }
+});
 
-  response.json(updatedContact);
-})
 
-ContactRouter.delete('/delete/:id/', async (request, response) => {
+// ContactRouter.delete('/delete/:id/', async (request, response) => {
 
-  const { id } = request.params
-  const deletedContact = await Contact.findByIdAndDelete(id);
+//   const { id } = request.params
+//   const deletedContact = await Contact.findByIdAndDelete(id);
 
-  if (!deletedContact) {
-    return response.status(404).json({ message: 'Contact not found.' });
+//   if (!deletedContact) {
+//     return response.status(404).json({ message: 'Contact not found.' });
+//   }
+
+//   response.json({ message: 'Contact deleted successfully' });
+
+// })
+
+ContactRouter.delete('/delete/:id/', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Validate ID format if necessary
+    const deletedContact = await Contact.findByIdAndDelete(id);
+
+    if (!deletedContact) {
+      return res.status(404).json({ message: 'Contact not found.' });
+    }
+
+    res.json({ message: 'Contact deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete contact.', error });
   }
+});
 
-  response.json({ message: 'Contact deleted successfully' });
 
-})
 
 // Accept contact (use the same ID as contact ID)
 ContactRouter.patch('/accept/:id', async (req, res) => {
@@ -132,25 +174,23 @@ ContactRouter.patch('/block/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Ensure valid ID and permissions if necessary
+
     const updatedContact = await Contact.findByIdAndUpdate(
-      id,  // Find by contact ID
-      { status: 'blocked' },  // Update the status
-      { new: true }
+      id,
+      { status: 'blocked' }, // Update status to blocked
+      { new: true, runValidators: true }
     );
 
     if (!updatedContact) {
-      return res.status(404).json({ message: 'Contact not found' });
+      return res.status(404).json({ message: 'Contact not found.' });
     }
 
-    res.json({ message: 'Contact blocked', contact: updatedContact });
+    res.json({ message: 'Contact blocked successfully.', contact: updatedContact });
   } catch (error) {
-    res.status(500).json({ message: 'Failed to block contact', error });
+    res.status(500).json({ message: 'Failed to block contact.', error });
   }
 });
-
-
-
-
 
 
 export default ContactRouter

@@ -30,6 +30,10 @@ const ProfileSchema = new mongoose.Schema({
     maxlength: 200, // Optional: Limit length of the 'about' field
     default: 'Hey there! I am using MernChat',
   },
+  isRegistered: {
+    type: String,
+    default: false
+  },
   phone: {
     type: String,
     required: true,
@@ -39,11 +43,7 @@ const ProfileSchema = new mongoose.Schema({
       },
       message: 'Phone number must be 10 digits',
     },
-  },
-  isRegistered: {
-    type: Boolean,
-    default: false
-  } // true if they are registered
+  }
 }, { timestamps: true }
 )
 
