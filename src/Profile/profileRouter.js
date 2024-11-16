@@ -39,7 +39,6 @@ ProfileRouter.post('/add', async (req, res) => {
     }
   });
 
-
 // ProfileRouter.post('/add', async (req, res) => {
 //     const { name, profilePicture = "", about, phone, authId } = req.body;
 
@@ -90,6 +89,7 @@ ProfileRouter.post('/add', async (req, res) => {
 
 
 // Get a profile by ID
+
 ProfileRouter.get('/get/:authId', async (req, res) => {
     const { authId } = req.params;
   
@@ -103,6 +103,7 @@ ProfileRouter.get('/get/:authId', async (req, res) => {
   
       // Return the profile data
       res.json({
+        profileId:profileData._id,
         authId: profileData.authId,
         name: profileData.name,
         profilePicture: profileData.profilePicture,
