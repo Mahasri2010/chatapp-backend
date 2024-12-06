@@ -7,10 +7,15 @@ const ChatRouter = express.Router();
 // Create a new chat (when a user starts chatting with another user)
 ChatRouter.post('/newchat', async (req, res) => {
   const { senderId, receiverId } = req.body;
+  console.log(req.body,"New Chat")
+ 
 
+  if (!senderId || !receiverId) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
   try {
     const existingChat = await Chat.findOne({
-      participants: { $all: [senderId, receiverId] },
+      participants: {$size: 2, $all: [senderId, receiverId] },
     });
 
     if (existingChat) {
@@ -20,6 +25,9 @@ ChatRouter.post('/newchat', async (req, res) => {
     const chat = new Chat({
       participants: [senderId, receiverId],  // participants is an array of both users
     });
+    console.log('Chat participants:', chat.participants);
+    console.log('New chat created with ID:', chat);
+
 
     await chat.save();
     res.status(201).json(chat);
@@ -28,15 +36,52 @@ ChatRouter.post('/newchat', async (req, res) => {
   }
 });
 
+
+
+// Endpoint to fetch a specific chat between two users
+ChatRouter.get('/specific/:authId/:receiverProfileId', async (req, res) => {
+  try {
+    const { authId, receiverProfileId} = req.params;
+
+    const chat = await Chat.findOne({
+      participants: { $all: [authId, receiverProfileId] },
+    })
+    .populate('participants', 'name profilePicture')
+    .populate('lastMessage','content senderId createdAt');
+
+    if (chat) {
+      res.status(200).json({
+        chatId: chat._id,
+        participants: chat.participants,
+        lastMessage: chat.lastMessage, // Include lastMessage details
+      });
+    } else {
+      res.status(404).json({ message: 'Chat not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching specific chat:', error);
+    res.status(500).json({ message: 'Failed to fetch chat' });
+  }
+});
+
+
 // Get all chats for a specific user (based on their `authId`)
 ChatRouter.get('/allchat/:authId', async (req, res) => {
   const { authId } = req.params;
+  const limit = parseInt(req.query.limit) || 20; // Optional: Pagination limit
+  const skip = parseInt(req.query.skip) || 0;    // Optional: Pagination offset
+  console.log(req.body, "AllChat")
 
   try {
     // Find all chats that the user is part of (either as sender or receiver)
     const chats = await Chat.find({
       participants: authId,
-    }).populate('participants', 'name profilePicture');  // Populate participant details like name and profile picture
+    })
+    .populate({path:'participants', select: 'name profilePicture'})  // Populate participant details like name and profile picture
+    .populate({path:'lastMessage'}) // Fetch details of the last message
+    .sort({ updatedAt: -1 }) // Sort by most recently updated
+    .limit(limit) // Pagination
+    .skip(skip);
 
     res.json(chats);
   } catch (error) {
@@ -44,44 +89,6 @@ ChatRouter.get('/allchat/:authId', async (req, res) => {
   }
 });
 
-// Send a message in a chat
-// ChatRouter.post('/send', async (req, res) => {
-//   const { chatId, senderId, content } = req.body;
 
-//   try {
-//     const message = new Message({
-//       chatId,
-//       sender: senderId,  // Sender's profileId
-//       content,
-//     });
-
-//     await message.save();
-
-//     // Update the chat's last message and updated time
-//     await Chat.findByIdAndUpdate(chatId, {
-//       lastMessage: content,
-//       updatedAt: Date.now(),
-//     });
-
-//     res.status(201).json(message);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-
-// Get messages for a chat
-// ChatRouter.get('/getmsg/:chatId', async (req, res) => {
-//   const { chatId } = req.params;
-
-//   try {
-//     const messages = await Message.find({ chatId })
-//       .populate('sender', 'name profilePicture')  // Populate sender details (like name and profile picture)
-//       .sort({ timestamp: 1 });  // Sort by timestamp in ascending order (oldest messages first)
-
-//     res.json(messages);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
 
 export default ChatRouter;

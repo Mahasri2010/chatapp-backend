@@ -6,13 +6,24 @@ const MessageRouter = express.Router();
 
 // Send a message in a chat
 MessageRouter.post('/send', async (req, res) => {
-  const { chatId, senderId, content } = req.body;
+  const { chatId, senderId, receiverId, content } = req.body;
+
+  if (!chatId || !senderId || !receiverId || !content) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  console.log('Received Data:', req.body);
+  console.log("chatId:", chatId);
+  console.log("senderId:", senderId);
+  console.log("receiverId:",receiverId);
+  console.log("content:", content);
+
 
   try {
     // Create a new message
     const message = new Message({
       chatId,
-      sender: senderId,  // Sender's profileId
+      senderId,  // Sender's profileId
+      receiverId, // Receiver's profileId
       content,
     });
 
@@ -20,10 +31,12 @@ MessageRouter.post('/send', async (req, res) => {
     await message.save();
 
     // Update the chat's last message and updated time
-    await Chat.findByIdAndUpdate(chatId, {
-      lastMessage: content,
-      updatedAt: Date.now(),
-    });
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { lastMessage: message._id },
+      { new: true }
+    );
+    console.log('Chat updated:', updatedChat);
 
     // Return the created message
     res.status(201).json(message);
@@ -39,7 +52,8 @@ MessageRouter.get('/specific/:chatId', async (req, res) => {
   try {
     // Find all messages in the specified chat, populate sender details, and sort by timestamp
     const messages = await Message.find({ chatId })
-      .populate('sender', 'name profilePicture')  // Populate sender details (e.g., name, profile picture)
+      .populate('senderId', 'name profilePicture')  // Populate sender details (e.g., name, profile picture)
+      .populate('receiverId', 'name profilePicture')
       .sort({ timestamp: 1 });  // Sort by timestamp in ascending order (oldest first)
 
     res.json(messages);
@@ -49,10 +63,11 @@ MessageRouter.get('/specific/:chatId', async (req, res) => {
 });
 
 // Update message status (sent, delivered, or read)
-MessageRouter.patch('/status/:messageId', async (req, res) => {
-  const { messageId } = req.params;
+MessageRouter.patch('/status/:id', async (req, res) => {
+  const { id } = req.params;
   const { status } = req.body;  // Status can be 'sent', 'delivered', or 'read'
-
+  console.log(req.body, "Status")
+  console.log(req.params, "ID")
   try {
     // Validate the status value
     if (!['sent', 'delivered', 'read'].includes(status)) {
@@ -60,10 +75,10 @@ MessageRouter.patch('/status/:messageId', async (req, res) => {
     }
 
     // Update the status of the message
-    const updatedMessage = await Message.findByIdAndUpdate(messageId, { status }, { new: true });
+    const updatedMessage = await Message.findByIdAndUpdate(id, { status }, { new: true });
 
     if (!updatedMessage) {
-      return res.status(404).json({ error: 'Message not found' });
+      return res.status(404).json({ error: 'Message not found' }); 
     }
 
     // Return the updated message

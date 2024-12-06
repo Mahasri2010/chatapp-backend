@@ -16,4 +16,13 @@ const chatSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+// Index to ensure better performance when querying participants
+chatSchema.index({ participants: 1 });
+
+// Optional: Prevent duplicate chats between two users by enforcing sorted order
+chatSchema.pre('save', function (next) {
+  this.participants.sort(); // Ensure participants are sorted to avoid duplicates
+  next();
+});
+
 export const Chat = mongoose.model('Chat', chatSchema);

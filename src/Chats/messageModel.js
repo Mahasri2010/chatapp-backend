@@ -6,9 +6,14 @@ const messageSchema = new mongoose.Schema({
     ref: 'Chat', // Refers to the chat this message belongs to
     required: true
   },
-  sender: {
+  senderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Profile', // Refers to the sender's profile
+    required: true
+  },
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Profile',
     required: true
   },
   content: {
@@ -26,4 +31,5 @@ const messageSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+messageSchema.index({ chatId: 1 }); // For chat-based lookups
 export const Message = mongoose.model('Message', messageSchema);

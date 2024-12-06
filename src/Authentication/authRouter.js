@@ -75,6 +75,14 @@ AuthRouter.post('/login/', async (request, response) => {
   if (user_check.password !== password) {
     return response.status(400).json({ message: "Invalid password" });
   }
+
+
+  // Find associated profile
+  const userProfile = await Profile.findOne({ authId: user_check._id });
+
+  if (!userProfile) {
+    return response.status(404).json({ message: "Profile not found" });
+  }
   
   const userPayload = { _id : user_check._id,email: user_check.email };
   const access_token = jwt.sign(userPayload, process.env.ACCESS_TOKEN_KEY, { expiresIn: '30s' });
@@ -83,19 +91,16 @@ AuthRouter.post('/login/', async (request, response) => {
   const new_refresh_token = new RefreshToken({ refresh_token });
   await new_refresh_token.save();
 
-  // Update the profile to set online to true and clear lastSeen
-  // await Profile.findOneAndUpdate(
-  //   { userId: user_check._id },
-  //   { online: true, lastSeen: null },
-  //   { new: true }
-  // );
-
   response.json({
     status: true,
     message: "Valid user",
     access_token,
     refresh_token,
-    userdata: { _id: user_check._id, email:user_check.email },
+    userdata: {
+       _id: user_check._id, 
+       email:user_check.email,
+       profileId: userProfile._id,
+       },
   });
 });
 

@@ -33,7 +33,7 @@ app.use('/Auth', AuthRouter)
 app.use('/Profile', ProfileRouter)
 app.use('/Contact', ContactRouter)
 app.use('/Chat', ChatRouter)
-app.use('/Message', MessageRouter)
+app.use('/Chat/Message',MessageRouter)
 
 // Socket.IO connection handler
 // io.on("connection", (socket) => {

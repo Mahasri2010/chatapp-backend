@@ -10,7 +10,7 @@ const contactSchema = new mongoose.Schema(
     profileId:{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Profile", // Reference to the Profile model
-      required: true,
+      // required: true,
     },
     contact_name: {
       type: String,
@@ -25,12 +25,14 @@ const contactSchema = new mongoose.Schema(
     contact_number: {
       type: String,
       required: true,
-      unique: true,
       match: [/^\d{10}$/, "Invalid phone number"], // Simple validation for 10-digit phone number
     }
   },
   { timestamps: true }
 );
+
+// Create a compound unique index for authId and contact_number
+contactSchema.index({ authId: 1, contact_number: 1 }, { unique: true });
 
 export const Contact = mongoose.model("Contact", contactSchema);
 

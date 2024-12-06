@@ -1,20 +1,17 @@
 import express from "express";
 import { Profile } from "./profileModel.js";
-import { Chat } from '../Chats/chatModel.js'
+
 
 const ProfileRouter = express.Router();
 
 // Add a new profile
 ProfileRouter.post('/add', async (req, res) => {
+
+  console.log(req.body)
     const { name, profilePicture = "", about, phone, authId } = req.body;
-  
-    // Validate required fields
-    if (!name || !phone || !authId) {
-      return res.status(400).json({ message: "Name, Phone, and Auth ID are required." });
-    }
-  
+
     try {
-      // Create a new profile
+      //   // Create a new profile
       const newProfile = new Profile({
         authId,
         name,
@@ -23,19 +20,22 @@ ProfileRouter.post('/add', async (req, res) => {
         isRegistered:true,
         phone
       });
-  
-      // Save to the database
-      await newProfile.save();
-  
-      res.status(201).json({ message: "Profile created successfully.", profile: newProfile });
-  
-    } catch (error) {
+ 
+       // Save to the database
+        await newProfile.save();
+        res.status(201).json({ message: "Profile created successfully.", newProfile });
+    
+      } catch (error) {
       // Handle errors, such as unique constraint violations
-      if (error.code === 11000) {
-        return res.status(409).json({ message: "Profile already exists for this Auth ID." });
-      }
-      console.error("Error creating profile:", error);
-      res.status(500).json({ message: "Failed to create profile.", error });
+        if (error.code === 11000) {
+          console.log(error.message)
+          return res.status(409).json({ message: "Profile already exists for this Auth ID." });
+        }
+        console.error("Error creating profile:", error);
+        res.status(500).json({ message: "Failed to create profile.", error });
+  
+      res.json(error.message)
+  
     }
   });
 
@@ -181,7 +181,7 @@ ProfileRouter.patch('/update/:authId', async (req, res) => {
             return res.status(404).json({ message: "Profile not found." });
         }
 
-        res.json(updatedProfile);
+        res.json({updatedProfile,message:"Profile updated successfully"});
     } catch (error) {
         console.error("Error updating profile:", error);
         res.status(500).json({ message: "Failed to update profile." });
